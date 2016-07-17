@@ -37,6 +37,9 @@ class Game(object):
         self._reddit_text = None
         self._game_finished = None
         self._gameday_url = None
+        self._ignore_schedule = None
+        self._division_code = None
+        self._start_time_edt = None
 
     def set_inning_score(self, team_id, home_team_id, inning, runs):
         self.home_team_id = home_team_id
@@ -213,3 +216,27 @@ class Game(object):
     @gameday_url.setter
     def gameday_url(self, value):
         self._gameday_url = value
+
+    @property
+    def ignore_schedule(self):
+        return self._ignore_schedule
+
+    @ignore_schedule.setter
+    def ignore_schedule(self, value):
+        self._ignore_schedule = value
+
+    @property
+    def division_code(self):
+        return self._division_code
+
+    @division_code.setter
+    def division_code(self, value):
+        self._division_code = value
+
+    @property
+    def start_time_edt(self):
+        return self._start_time_edt
+
+    @start_time_edt.setter
+    def start_time_edt(self, value):
+        self._start_time_edt = value

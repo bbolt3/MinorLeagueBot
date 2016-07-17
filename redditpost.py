@@ -1,5 +1,6 @@
 import praw
 import time
+import scheduler
 from milbdata import *
 from redditlogin import *
 
@@ -69,7 +70,7 @@ def reddit_team_stats(game):
             if game.away_team_hits is not None and game.team_id is not None and game.home_team_hits is not None and \
                             game.away_team_id is not None and int(game.away_team_hits) == 0 and \
                             len(game.home_team_hits) > 0 and len(game.away_team_hits) > 0 and \
-                            game.team_id == game.home_team_id or int(game.home_team_hits) == 0 and \
+                            game.team_id == game.home_team_id or game.home_team_hits is not None and int(game.home_team_hits) == 0 and \
                             game.team_id == game.away_team_id:
                 game.game_status += " No Hitter"
                 team_stats += " (No Hitter)"
@@ -238,8 +239,9 @@ def reddit_brief_text_post(teams, time_start, time_end, post_title, milb_data):
             except:
                 print
         if not is_finished:
-            print "updating in %s minutes" % str(time_to_wait / 60)
-            time.sleep(time_to_wait)
+            sleep = scheduler.next_game_update(games, time_to_wait)
+            print "updating in %s minutes" % str(sleep / 60)
+            time.sleep(sleep)
 
     print "All games have completed. Finished."
 

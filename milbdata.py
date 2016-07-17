@@ -52,8 +52,8 @@ class MilbData():
                 game.team_record = current_game["team_wl"]
                 game.opponent_record = current_game["opponent_wl"]
                 game.opponent_name_full = current_game["opponent_full"]
-                #print current_game["team_full"] + "  " + current_game["game_time_local"] + "   " +  current_game["game_time_et"]
-                #game_time = datetime.datetime.strptime(current_game["game_time_et"], "%Y-%m-%dT%H:%M:%S")
+                #current_game["team_full"] + "  " + current_game["game_time_local"] + "   " +  current_game["game_time_et"]
+                game.start_time_edt = datetime.datetime.strptime(current_game["game_time_et"], "%Y-%m-%dT%H:%M:%S")
                 game_time = datetime.datetime.strptime(current_game["team_game_time"], "%m/%d/%Y %I:%M:%S %p")
                 game.scheduled_start = game_time.strftime("%I:%M %p")
                 #game.scheduled_start = game_time.strftime("%I:%M:%S %p")
@@ -63,7 +63,8 @@ class MilbData():
                 game.double_header = current_game["double_header_sw"]
                 game.game_number = current_game["game_nbr"]
                 if "team_tunein" in current_game:
-                    game.listen = current_game["team_tunein"]
+                    if len(current_game["team_tunein"]) > 0:
+                        game.listen = 'http://tunein.com/player/station/' + current_game["team_tunein"] + '/'
                 if "game_status" in current_game:
                     if current_game["game_status"].startswith("Postponed") or \
                             current_game["game_status"].startswith("Delayed") or \
@@ -107,19 +108,20 @@ class MilbData():
         game_id = unicode.replace(game.game_id, "/", "_")
         game_id = unicode.replace(game_id, "-", "_")
         year, month, day, oppenent, team, game_number = game_id.split("_")
-        division = ""
-        if game.team_id == team_aaa_id:
-            division = "aaa"
-        elif game.team_id == team_azl_id or game.team_id == team_dsl_id or game.team_id == team_vsl_id:
-            division = "rok"
-        elif game.team_id == team_shortseason_id:
-            division = "asx"
-        elif game.team_id == team_lowa_id:
-            division = "afx"
-        elif game.team_id == team_higha_id:
-            division = "afa"
-        elif game.team_id == team_aa_id:
-            division = "aax"
+        division = game.division_code
+        #if game.team_id == team_aaa_id:
+         #   division = "aaa"
+        #elif game.team_id == team_azl_id or game.team_id == team_dsl_id or game.team_id == team_vsl_id or game.team_id \
+        #        == team_dsl2_id:
+        #    division = "rok"
+        #elif game.team_id == team_shortseason_id:
+        #    division = "asx"
+        #elif game.team_id == team_lowa_id:
+        #    division = "afx"
+        #elif game.team_id == team_higha_id:
+        #    division = "afa"
+        #elif game.team_id == team_aa_id:
+        #    division = "aax"
         if division != "" and is_boxscore:
             return "%s/%s/%sgid_%s/boxscore.json" % (base_url, division, self.string_to_long_date(year, month, day), game_id)
             #return "%s/%s/%sgid_%s/boxscore.json" % (base_url, division, string_to_long_date(game.home_time), game_id)
@@ -437,16 +439,18 @@ class MilbData():
             return ""
 
 
-    def get_stats(self, team_ids, time_start, time_end):
+    def get_stats(self, teams, time_start, time_end):
         games_list = []
         batters_list = list(notable_batters)
         copy_batters_list = list(batters_list)
         pitchers_list = list(notable_pitchers)
-        for team_id in team_ids:
-            schedule = self.get_schedule(time_start, time_end, team_id, datetime.datetime.now().strftime("%Y"))
+        for team in teams:
+            schedule = self.get_schedule(time_start, time_end, team.team_id, datetime.datetime.now().strftime("%Y"))
             if schedule is not None:
                 games = self.get_games(schedule)
                 for game in games:
+                    game.division_code = team.division_code
+                    game.ignore_schedule = team.ignore_schedule
                     roster = self.get_roster(game.team_id)
                     injured_batters = self.get_injury_list(batters_list, roster)
                     injured_pitchers = self.get_injury_list(pitchers_list, roster)
@@ -455,7 +459,7 @@ class MilbData():
                     linescore = self.get_linescore(game)
                     if boxscore is not None:   #check if there is a box score yet
                         self.get_game_score(game, linescore)
-                        battingindex = 0 if boxscore["data"]["boxscore"]["home_id"] == team_id else 1
+                        battingindex = 0 if boxscore["data"]["boxscore"]["home_id"] == team.team_id else 1
                         pitchingindex = 0 if battingindex == 1 else 1
 
                         game.reddit_text = redditpost.reddit_team_stats(game) + redditpost.reddit_score_table(game)
