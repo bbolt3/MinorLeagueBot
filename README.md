@@ -10,7 +10,7 @@ In defining the team, you specify the 'division code'. It's typically a 3 charac
 'rok' and 'aaa' are examples of this code. It is needed to obtain the schedule for the team that contains information about the scheduled games. There
 is a boolean value that lets the bot not run the scheduler around their reported game times. There are a few leagues that report a game time
 as early in the morning, but do not play or report the results until many hours later. This is to prevent the bot from running needlessly until those
-stats are reported. If all teams are finished or all remaining games are not being watched by the scheduler it updates on a 1 hour interval until
+stats are reported. If all scheduler based teams are finished or all remaining games are not being watched by the scheduler it updates on a 1 hour interval until
 all games have completed. 
 
 When running, the bot checks the current date and uses an hour offset to adjust for varying time zones. It queries for the scheduled games for that 
