@@ -31,4 +31,6 @@ or ends if all games are finished.
 
 Example of the bot running. Current games try to grab game day and radio stream listed in the game information obtained from the schedule. The frequency
 of updates provided by the box or line score is dependent on the team. Some lower levels don't update on a pitch by pitch basis so it may only
-update that box score every half inning or after the end of a game.
+update that box score every half inning or after the end of a game. 
+
+A team link and player link is provided for each team or player being watched. When adding players to the watch list the name should appear exactly how it appears on their MILB page.
