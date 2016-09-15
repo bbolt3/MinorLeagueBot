@@ -191,16 +191,25 @@ def reddit_post_brief_box_score(game):
 
     return output
 
+def delay_post(games, time_to_wait):
+    sleep = scheduler.next_game_update(games, time_to_wait)
+    print "updating in %s minutes" % str(sleep / 60)
+    time.sleep(sleep)
+
 
 def reddit_brief_text_post(teams, time_start, time_end, post_title, milb_data):
     global networkdata
     networkdata = milb_data
     is_finished = False
+    first_post = True
     post = None
     while not is_finished:
         games = networkdata.get_stats(teams, time_start, time_end)
         output = ""
         games_finished = 0
+        if len(games) == 0:
+        	is_finished = True
+        	
         for game in games:
             output += game.reddit_text
             output += reddit_post_brief_box_score(game)
@@ -212,6 +221,10 @@ def reddit_brief_text_post(teams, time_start, time_end, post_title, milb_data):
 
         if len(games) > 0 and len(output) > 0:
             try:
+                if (first_post):
+                    first_post = False
+                    delay_post(games, time_to_wait)
+
                 reddit = praw.Reddit(user_agent=useragent)
                 reddit.login(username=user, password=password, disable_warning=True)
                 if reddit is not None:
@@ -239,9 +252,7 @@ def reddit_brief_text_post(teams, time_start, time_end, post_title, milb_data):
             except:
                 print
         if not is_finished:
-            sleep = scheduler.next_game_update(games, time_to_wait)
-            print "updating in %s minutes" % str(sleep / 60)
-            time.sleep(sleep)
+            delay_post(games, time_to_wait)
 
     print "All games have completed. Finished."
 

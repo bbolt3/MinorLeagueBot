@@ -5,6 +5,7 @@ from inactive import InactivePlayer
 from player import *
 from watchlist import *
 import redditpost
+import time
 
 class MilbData():
 
@@ -28,8 +29,16 @@ class MilbData():
         :param season: year the game takes place
         :return: schedule JSON containing games happening between start and end dates
         """
-        return requests.get(r"http://www.milb.com/lookup/json/named.schedule_team_complete.bam?start_date='" + start_date +
-                     "'&end_date='" + end_date + "'&team_id=" + team_id + "&season=" + season).json()
+        data = None
+        while data is None:
+            try:
+                data = requests.get(r"http://www.milb.com/lookup/json/named.schedule_team_complete.bam?start_date='" + start_date +
+                         "'&end_date='" + end_date + "'&team_id=" + team_id + "&season=" + season).json()
+            except:
+                print "Schedule error. Retrying in one minute"
+                data = None
+                time.sleep(60)
+        return data
 
 
     def set_game_information_from_schedule(self, current_game):
@@ -109,25 +118,10 @@ class MilbData():
         game_id = unicode.replace(game_id, "-", "_")
         year, month, day, oppenent, team, game_number = game_id.split("_")
         division = game.division_code
-        #if game.team_id == team_aaa_id:
-         #   division = "aaa"
-        #elif game.team_id == team_azl_id or game.team_id == team_dsl_id or game.team_id == team_vsl_id or game.team_id \
-        #        == team_dsl2_id:
-        #    division = "rok"
-        #elif game.team_id == team_shortseason_id:
-        #    division = "asx"
-        #elif game.team_id == team_lowa_id:
-        #    division = "afx"
-        #elif game.team_id == team_higha_id:
-        #    division = "afa"
-        #elif game.team_id == team_aa_id:
-        #    division = "aax"
         if division != "" and is_boxscore:
             return "%s/%s/%sgid_%s/boxscore.json" % (base_url, division, self.string_to_long_date(year, month, day), game_id)
-            #return "%s/%s/%sgid_%s/boxscore.json" % (base_url, division, string_to_long_date(game.home_time), game_id)
         if division != "" and not is_boxscore:
             return "%s/%s/%sgid_%s/linescore.json" % (base_url, division, self.string_to_long_date(year, month, day), game_id)
-            #return "%s/%s/%sgid_%s/linescore.json" % (base_url, division, string_to_long_date(game.home_time), game_id)
 
 
     def get_score_json(self, url):
